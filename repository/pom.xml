@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.orderofthebee.support-tools</groupId>
         <artifactId>support-tools-parent</artifactId>
-        <version>1.0.0.0-SNAPSHOT</version>
+        <version>1.1.0.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>support-tools-repo</artifactId>
@@ -23,6 +23,54 @@
         <dependency>
             <groupId>${alfresco.groupId}</groupId>
             <artifactId>alfresco-remote-api</artifactId>
+            <exclusions>
+               <!-- exclude transitive dependencies not relevant to this addon's purpose (some are even not available any more) -->
+               <!-- the following addresses either completely irrelevant groups (e.g. openoffice) or ones we don't require (yet) with substantial transitive dependency tails -->
+               <exclusion>
+                  <groupId>org.springframework.social</groupId>
+                  <artifactId>*</artifactId>
+               </exclusion>
+               <exclusion>
+                  <groupId>org.apache.chemistry.opencmis</groupId>
+                  <artifactId>*</artifactId>
+               </exclusion>
+               <exclusion>
+                  <groupId>com.google.gdata</groupId>
+                  <artifactId>*</artifactId>
+               </exclusion>
+               <exclusion>
+                  <groupId>com.fasterxml.jackson.core</groupId>
+                  <artifactId>*</artifactId>
+               </exclusion>
+               <exclusion>
+                  <groupId>org.apache.poi</groupId>
+                  <artifactId>*</artifactId>
+               </exclusion>
+               <exclusion>
+                  <groupId>org.apache.pdfbox</groupId>
+                  <artifactId>*</artifactId>
+               </exclusion>
+               <exclusion>
+                  <groupId>org.apache.tika</groupId>
+                  <artifactId>*</artifactId>
+               </exclusion>
+               <exclusion>
+                  <groupId>org.openoffice</groupId>
+                  <artifactId>*</artifactId>
+               </exclusion>
+               <exclusion>
+                  <groupId>com.artofsolving</groupId>
+                  <artifactId>*</artifactId>
+               </exclusion>
+               <exclusion>
+                  <groupId>com.drewnoakes</groupId>
+                  <artifactId>*</artifactId>
+               </exclusion>
+               <exclusion>
+                  <groupId>org.codehaus.groovy</groupId>
+                  <artifactId>*</artifactId>
+               </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -55,6 +103,22 @@
     </dependencies>
 
     <build>
+        <resources>
+            <resource>
+                <directory>src\main\resources</directory>
+                <filtering>true</filtering>
+            </resource>
+            <resource>
+                <directory>src\main\amp</directory>
+                <targetPath>${project.build.directory}/amp</targetPath>
+                <filtering>true</filtering>
+                <excludes>
+                    <exclude>**/.jshintrc</exclude>
+                    <exclude>**/.jshintignore</exclude>
+                </excludes>
+            </resource>
+        </resources>
+
         <plugins>
             <plugin>
                 <artifactId>maven-resources-plugin</artifactId>
@@ -78,12 +142,7 @@
             <plugin>
                 <groupId>de.acosix.maven</groupId>
                 <artifactId>jshint-maven-plugin</artifactId>
-                <version>1.0.0</version>
                 <configuration>
-                    <sourceDirectory>${project.basedir}/src/main</sourceDirectory>
-                    <includes>
-                        <include>amp/**/*.js</include>
-                    </includes>
                     <excludes>
                         <exclude>amp/config/alfresco/templates/webscripts/**/*.get.js</exclude>
                         <exclude>amp/config/alfresco/templates/webscripts/**/*.delete.js</exclude>
@@ -92,12 +151,12 @@
                         <exclude>amp/config/alfresco/templates/webscripts/**/*.post.json.js</exclude>
                         <exclude>amp/config/alfresco/templates/webscripts/**/*.put.json.js</exclude>
                         <exclude>amp/web/ootbee-support-tools/js/moment-with-locales.min.js</exclude>
+                        <exclude>amp/web/ootbee-support-tools/js/smoothie.js</exclude>
                         <exclude>amp/web/ootbee-support-tools/js/jquery-2.2.3.js</exclude>
                         <exclude>amp/web/ootbee-support-tools/js/jquery.dataTables.js</exclude>
                         <exclude>amp/web/ootbee-support-tools/js/dataTables.buttons.min.js</exclude>
                         <exclude>amp/web/ootbee-support-tools/js/dataTables.bootstrap4.min.js</exclude>
                     </excludes>
-                    <checkstyleReportFile>js-checkstyle.xml</checkstyleReportFile>
                 </configuration>
                 <executions>
                     <execution>

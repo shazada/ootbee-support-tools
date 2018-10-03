@@ -22,7 +22,7 @@
  * Copyright (C) 2005-2017 Alfresco Software Limited.
  */
 
-/* global formdata: false, logSettingTracker: false */
+/* global logSettingTracker: false */
 
 function buildLoggerState(logger)
 {
@@ -135,47 +135,6 @@ function changeLoggerState(loggerName, level)
     
     logSettingTracker.recordChange(logger, logger.level, newLevel);
     logger.level = newLevel;
-}
-
-/* exported processLoggerStateChangeFromFormData */
-function processLoggerStateChangeFromFormData(urlLoggerName)
-{
-    var fields, field, i, loggerName, level, showUnconfiguredLoggers;
-
-    fields = formdata.fields;
-    for (i = 0; i < fields.length; i++)
-    {
-        field = fields[i];
-        switch (String(field.name))
-        {
-            case 'logger':
-                if (urlLoggerName !== undefined && urlLoggerName !== null)
-                {
-                    status.setCode(status.STATUS_BAD_REQUEST, 'Form data for logger update must not contain the logger name - that is to be part of the URL');
-                    status.redirect = true;
-                    return;
-                }
-                loggerName = String(field.value);
-                break;
-            case 'level':
-                level = String(field.value);
-                break;
-            case 'showUnconfiguredLoggers':
-                showUnconfiguredLoggers = String(field.value);
-                break;
-            default:
-                logger.debug('Unknown field: ' + field.name);
-        }
-    }
-    
-    if (loggerName === undefined && urlLoggerName !== undefined && urlLoggerName !== null)
-    {
-        loggerName = urlLoggerName;
-    }
-
-    changeLoggerState(loggerName, level);
-
-    return showUnconfiguredLoggers;
 }
 
 /* exported processLoggerStateChangeFromJSONData */
@@ -444,11 +403,9 @@ function getLoggersToSnapshot()
 /* exported createSnapshot */
 function createSnapshot()
 {
-	var snapshotLogFile, logLayout, snapshotAppender, loggers;
+	var snapshotAppender, loggers;
 	
-	snapshotLogFile = Packages.org.alfresco.util.TempFileProvider.createTempFile("ootbee-support-tools-snapshot", ".log");
-	logLayout = new Packages.org.apache.log4j.PatternLayout('%d{yyyy-MM-dd} %d{ABSOLUTE} %-5p [%c] [%t] %m%n');		
-	snapshotAppender = new Packages.org.orderofthebee.addons.support.tools.repo.TemporaryFileAppender(logLayout, snapshotLogFile);
+	snapshotAppender = new Packages.org.orderofthebee.addons.support.tools.repo.TemporaryFileAppender('ootbee-support-tools-snapshot-');
 	loggers = getLoggersToSnapshot();
 	loggers.forEach(
 	    function createSnapshot_connectLoggerAndAppender(logger)
@@ -457,19 +414,18 @@ function createSnapshot()
 	    }
     );
 	
-	return snapshotLogFile;
+	return snapshotAppender.appenderUUID;
 }
 
 /* exported logSnapshotLapMessage */
 function logSnapshotLapMessage(message) {
-    var root, clazz, level, lapLogger;
+    var lapLogger, level;
 
-    root = Packages.org.apache.log4j.Logger.getRootLogger();
+    // Fake logger that does not correspond to any class-based logger
+    lapLogger = Packages.org.apache.log4j.Logger.getLogger('org.orderofthebee.addons.support.tools.repo.logSnapshotLap');
+
+    // ensure level is enabled (in case someone reconfigured logger) and log
     level = Packages.org.apache.log4j.Level.INFO;
-    // Fake logger that produces a good log message with the Alfresco default log format
-    clazz = 'org.orderofthebee.addons.support.tools.repo.logSnapshotLap';
-    lapLogger = root.getLogger(clazz);
     lapLogger.setLevel(level);
-
     lapLogger.log(level, message);
 }

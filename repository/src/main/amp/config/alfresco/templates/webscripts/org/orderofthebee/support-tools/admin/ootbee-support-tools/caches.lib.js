@@ -1,6 +1,6 @@
 /**
- * Copyright (C) 2016, 2017 Axel Faust
- * Copyright (C) 2016, 2017 Order of the Bee
+ * Copyright (C) 2016 - 2018 Axel Faust
+ * Copyright (C) 2016 - 2018 Order of the Bee
  *
  * This file is part of Community Support Tools
  *
@@ -19,7 +19,7 @@
  */
 /*
  * Linked to Alfresco
- * Copyright (C) 2005-2017 Alfresco Software Limited.
+ * Copyright (C) 2005-2018 Alfresco Software Limited.
  */
 function mapCacheMetrics(metrics, cacheInfo)
 {
@@ -51,14 +51,15 @@ function mapCacheMetrics(metrics, cacheInfo)
 
 function buildCacheInfo(cacheName, cache, allowClearGlobal, propertyGetter)
 {
-    var maxItems, cacheInfo, invHandler, alfCacheStatsEnabled, alfCacheStats, stats;
+    var configCacheName, maxItems, cacheInfo, invHandler, alfCacheStatsEnabled, alfCacheStats, stats;
 
-    maxItems = propertyGetter('cache.' + cacheName + '.maxItems', '-1');
+    configCacheName = propertyGetter('cache.' + cacheName + '.configCacheName', cacheName);
+    maxItems = propertyGetter('cache.' + configCacheName + '.maxItems', '-1');
 
     cacheInfo = {
         name : cacheName,
-        definedType : propertyGetter('cache.' + cacheName + '.cluster.type', ''),
-        clearable : allowClearGlobal && propertyGetter('cache.' + cacheName + '.clearable', '').toLowerCase() === 'true',
+        definedType : propertyGetter('cache.' + configCacheName + '.cluster.type', ''),
+        clearable : allowClearGlobal && propertyGetter('cache.' + configCacheName + '.clearable', '').toLowerCase() === 'true',
         type : '',
         size : cache.keys.size(),
         maxSize : parseInt(maxItems, 10),
@@ -86,7 +87,7 @@ function buildCacheInfo(cacheName, cache, allowClearGlobal, propertyGetter)
         cacheInfo.type = String(cache.class.name);
     }
 
-    alfCacheStatsEnabled = propertyGetter('cache.' + cacheName + '.tx.statsEnabled', '').toLowerCase() === 'true';
+    alfCacheStatsEnabled = propertyGetter('cache.' + configCacheName + '.tx.statsEnabled', '').toLowerCase() === 'true';
 
     if (alfCacheStatsEnabled)
     {
@@ -267,13 +268,15 @@ function buildCaches()
 /* exported resetCache */
 function resetCache(cacheName)
 {
-    var TransactionalCache, ctxt, propertyGetter, cacheBeanNames, cache, cacheInfo, idx, cacheBeanName;
+    var TransactionalCache, ctxt, propertyGetter, cacheBeanNames, allowClearGlobal, cache, cacheInfo, idx, cacheBeanName;
 
     TransactionalCache = Packages.org.alfresco.repo.cache.TransactionalCache;
     ctxt = Packages.org.springframework.web.context.ContextLoader.getCurrentWebApplicationContext();
     propertyGetter = buildPropertyGetter(ctxt);
 
     cacheBeanNames = ctxt.getBeanNamesForType(Packages.org.alfresco.repo.cache.SimpleCache, false, false);
+
+    allowClearGlobal = propertyGetter('ootbee-support-tools.cache.clearable', '').toLowerCase() === 'true';
 
     for (idx = 0; idx < cacheBeanNames.length; idx++)
     {
@@ -283,7 +286,7 @@ function resetCache(cacheName)
         cache = ctxt.getBean(cacheBeanName, Packages.org.alfresco.repo.cache.SimpleCache);
         if (!(cache instanceof TransactionalCache) && ((cache.cacheName !== undefined && String(cache.cacheName) === cacheName) || cacheBeanName === cacheName))
         {
-            cacheInfo = buildCacheInfo(cache.cacheName || cacheBeanName, cache, propertyGetter);
+            cacheInfo = buildCacheInfo(cache.cacheName || cacheBeanName, cache, allowClearGlobal, propertyGetter);
             break;
         }
     }

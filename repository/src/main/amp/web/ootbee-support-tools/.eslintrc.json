@@ -1,0 +1,47 @@
+{
+    "extends": "eslint:recommended",
+    "parserOptions": {
+        "ecmaVersion": 5,
+        "sourceType": "script"
+    },
+    "env": {
+        "browser": true,
+        "jquery": true
+    },
+    "globals": {
+    },
+    "rules": {
+        "no-bitwise": "off",
+        "curly": "error",
+        "eqeqeq": "error",
+        "guard-for-in": "error",
+        "no-undef": "error",
+        "no-use-before-define": "off",
+        "no-caller": "error",
+        "new-cap": "off",
+        "no-new-object": "error",
+        "strict": "off",
+        "no-unused-vars": "error",
+        "quotes": [
+            "error",
+            "single"
+        ],
+        "one-var": [
+            "error",
+            {
+                "var": "always",
+                "let": "never",
+                "const": "never"
+            }
+        ],
+        "vars-on-top": "error",
+        "semi": [
+            "error",
+            "always"
+        ],
+        "radix": [
+            "error",
+            "always"
+        ]
+    }
+}
